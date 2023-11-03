@@ -1,0 +1,79 @@
+{
+  "pluginAlias": "knx-doorbell",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "ip": {
+      "title": "KNX Router or Interface",
+      "type": "string",
+      "placeholder": "224.0.23.12",
+      "description": "IP of the KNX Router."
+    },
+    "port": {
+      "title": "KNX Port",
+      "type": "string",
+      "placeholder": "3671",
+      "description": "KNX Port"
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "title": "Doorbells",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "required": true,
+            "placeholder": "Display Name for Doorbell"
+          },
+          "listen_single_press": {
+            "title": "Listen Single Press Address",
+            "type": "string",
+            "required": true,
+            "placeholder": "1/1/1",
+            "pattern": "^[0-9]{1,4}/[0-9]{1,4}/[0-9]{1,4}$"
+          },
+          "listen_double_press": {
+            "title": "Listen Doubel Press Address",
+            "type": "string",
+            "required": false,
+            "placeholder": "1/1/1",
+            "pattern": "^[0-9]{1,4}/[0-9]{1,4}/[0-9]{1,4}$"
+          },
+          "listen_long_press": {
+            "title": "Listen Long Press Address",
+            "type": "string",
+            "required": false,
+            "placeholder": "1/1/1",
+            "pattern": "^[0-9]{1,4}/[0-9]{1,4}/[0-9]{1,4}$"
+          }
+        }
+      }
+    }
+  },
+  "layout": [
+    {
+      "key": "devices",
+      "type": "array",
+      "orderable": false,
+      "buttonText": "Add Doorbell",
+      "items": [
+        "devices[].name",
+        "devices[].listen_single_press",
+        "devices[].listen_double_press",
+        "devices[].listen_long_press"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Global",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "ip",
+        "port"
+      ]
+    }
+  ]
+}
