@@ -1,4 +1,4 @@
-import { AccessoryConfig, AccessoryPlugin, HapStatusError, Service } from 'homebridge';
+import { AccessoryConfig, AccessoryPlugin, Service } from 'homebridge';
 
 import { Datapoint } from 'knx';
 import fakegato from 'fakegato-history';
@@ -102,87 +102,87 @@ export class DoorbellAccessory implements AccessoryPlugin {
     this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
       .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
 
-    // // times opened
-    // this.doorbellService.addCharacteristic(EveContactSensorTimesOpened);
-    // this.doorbellService.getCharacteristic(EveContactSensorTimesOpened).onGet(async () => {
-    //   let count = 0;
-    //   let prevStatus = undefined;
-    //   for (let i = 0; i < this.loggingService.history.length; ++i) {
-    //     const status = this.loggingService.history[i].status;
-    //     if (status === undefined) {
-    //       continue;
-    //     }
-    //     if (status !== prevStatus && prevStatus !== true) {
-    //       count++;
-    //     }
-    //     prevStatus = status;
-    //   }
-    //   return count;
-    // });
+    // times opened
+    this.doorbellService.addCharacteristic(EveContactSensorTimesOpened);
+    this.doorbellService.getCharacteristic(EveContactSensorTimesOpened).onGet(async () => {
+      let count = 0;
+      let prevStatus = undefined;
+      for (let i = 0; i < this.loggingService.history.length; ++i) {
+        const status = this.loggingService.history[i].status;
+        if (status === undefined) {
+          continue;
+        }
+        if (status !== prevStatus && prevStatus !== true) {
+          count++;
+        }
+        prevStatus = status;
+      }
+      return count;
+    });
 
-    // // open duration
-    // this.doorbellService.addCharacteristic(EveContactSensorOpenDuration);
-    // this.doorbellService.getCharacteristic(EveContactSensorOpenDuration).onGet(async () => {
-    //   let duration = 0;
-    //   let prevStatus = undefined;
-    //   let prevTime = undefined;
-    //   for (let i =0; i < this.loggingService.history.length; ++i) {
-    //     const status = this.loggingService.history[i].status;
-    //     const time = this.loggingService.history[i].time;
-    //     if (status === undefined || time === undefined) {
-    //       continue;
-    //     }
-    //     if (prevStatus === true && prevTime !== undefined) {
-    //       duration += time - prevTime;
-    //     }
-    //     prevStatus = status;
-    //     prevTime = time;
-    //   }
+    // open duration
+    this.doorbellService.addCharacteristic(EveContactSensorOpenDuration);
+    this.doorbellService.getCharacteristic(EveContactSensorOpenDuration).onGet(async () => {
+      let duration = 0;
+      let prevStatus = undefined;
+      let prevTime = undefined;
+      for (let i =0; i < this.loggingService.history.length; ++i) {
+        const status = this.loggingService.history[i].status;
+        const time = this.loggingService.history[i].time;
+        if (status === undefined || time === undefined) {
+          continue;
+        }
+        if (prevStatus === true && prevTime !== undefined) {
+          duration += time - prevTime;
+        }
+        prevStatus = status;
+        prevTime = time;
+      }
 
-    //   return duration;
-    // });
+      return duration;
+    });
 
-    // // closed duration
-    // this.doorbellService.addCharacteristic(EveContactSensorClosedDuration);
-    // this.doorbellService.getCharacteristic(EveContactSensorClosedDuration).onGet(async () => {
-    //   let duration = 0;
-    //   let prevStatus = undefined;
-    //   let prevTime = undefined;
-    //   for (let i =0; i < this.loggingService.history.length; ++i) {
-    //     const status = this.loggingService.history[i].status;
-    //     const time = this.loggingService.history[i].time;
-    //     if (status === undefined || time === undefined) {
-    //       continue;
-    //     }
-    //     if (prevStatus === false && prevTime !== undefined) {
-    //       duration += time - prevTime;
-    //     }
-    //     prevStatus = status;
-    //     prevTime = time;
-    //   }
+    // closed duration
+    this.doorbellService.addCharacteristic(EveContactSensorClosedDuration);
+    this.doorbellService.getCharacteristic(EveContactSensorClosedDuration).onGet(async () => {
+      let duration = 0;
+      let prevStatus = undefined;
+      let prevTime = undefined;
+      for (let i =0; i < this.loggingService.history.length; ++i) {
+        const status = this.loggingService.history[i].status;
+        const time = this.loggingService.history[i].time;
+        if (status === undefined || time === undefined) {
+          continue;
+        }
+        if (prevStatus === false && prevTime !== undefined) {
+          duration += time - prevTime;
+        }
+        prevStatus = status;
+        prevTime = time;
+      }
 
-    //   return duration;
-    // });
+      return duration;
+    });
 
-    // // last activation
-    // this.doorbellService.addCharacteristic(EveContactSensorLastActivation);
-    // this.doorbellService.getCharacteristic(EveContactSensorLastActivation).onGet(async () => {
-    //   if (this.loggingService.getInitialTime() === undefined) {
-    //     return 0;
-    //   } else if (this.doorbellService.getCharacteristic(platform.Characteristic.ContactSensorState).value) {
-    //     return Math.round(new Date().valueOf() / 1000) - this.loggingService.getInitialTime();
-    //   } else {
-    //     let lastActivation = this.loggingService.history[this.loggingService.history.length - 1].time;
-    //     for (let i = this.loggingService.history.length - 1; i >= 0; --i) {
-    //       if (this.loggingService.history[i].status === false) {
-    //         lastActivation = this.loggingService.history[i].time;
-    //       } else {
-    //         break;
-    //       }
-    //     }
-    //     return lastActivation - this.loggingService.getInitialTime();
-    //   }
-    // });
+    // last activation
+    this.doorbellService.addCharacteristic(EveContactSensorLastActivation);
+    this.doorbellService.getCharacteristic(EveContactSensorLastActivation).onGet(async () => {
+      if (this.loggingService.getInitialTime() === undefined) {
+        return 0;
+      } else if (this.doorbellService.getCharacteristic(platform.Characteristic.ContactSensorState).value) {
+        return Math.round(new Date().valueOf() / 1000) - this.loggingService.getInitialTime();
+      } else {
+        let lastActivation = this.loggingService.history[this.loggingService.history.length - 1].time;
+        for (let i = this.loggingService.history.length - 1; i >= 0; --i) {
+          if (this.loggingService.history[i].status === false) {
+            lastActivation = this.loggingService.history[i].time;
+          } else {
+            break;
+          }
+        }
+        return lastActivation - this.loggingService.getInitialTime();
+      }
+    });
 
     this.loggingService = new platform.fakeGatoHistoryService('door', this, { storage: 'fs', log: platform.log });
 
