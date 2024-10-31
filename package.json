@@ -1,7 +1,7 @@
 {
   "displayName": "KNX Doorbell",
   "name": "@jendrik/homebridge-knx-doorbell",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Homebridge plugin for KNX Doorbells",
   "author": "Jendrik Bertram",
   "license": "Apache-2.0",
