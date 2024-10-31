@@ -3,9 +3,8 @@ import { AccessoryConfig, AccessoryPlugin, Service } from 'homebridge';
 import { Datapoint } from 'knx';
 import fakegato from 'fakegato-history';
 
-import { PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_DISPLAY_NAME } from './settings';
-
-import { DoorbellPlatform } from './platform';
+import { PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_DISPLAY_NAME } from './settings.js';
+import { DoorbellPlatform } from './platform.js';
 
 export const CONTACT_TIME_MS = 1000;
 

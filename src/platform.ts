@@ -4,7 +4,7 @@ import fakegato from 'fakegato-history';
 
 import { Connection } from 'knx';
 
-import { DoorbellAccessory } from './accessory';
+import { DoorbellAccessory } from './accessory.js';
 
 
 export class DoorbellPlatform implements StaticPlatformPlugin {
