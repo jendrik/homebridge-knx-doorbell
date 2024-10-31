@@ -1,5 +1,4 @@
-/* eslint @typescript-eslint/no-var-requires: "off" */
-const { displayName, version } = require('../package.json');
+import { displayName, version } from '../package.json';
 
 /**
  * This is the name of the platform that users will use to register the plugin in the Homebridge config.json
