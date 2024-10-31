@@ -192,34 +192,9 @@ export class DoorbellAccessory implements AccessoryPlugin {
       autoread: false,
     }, platform.connection);
 
-    dp_listen_single_press.on('change', (oldValue: number, newValue: number) => {
-      platform.log.info(`Single Press: ${newValue}`);
-      this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
-        .updateValue(platform.Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS);
-      if (this.timer !== undefined) {
-        this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-          .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
-        this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: true });
-        this.timer = setTimeout(() => {
-          this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-            .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
-          this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: false });
-          this.timer = undefined;
-        }, CONTACT_TIME_MS);
-      }
-    });
-
-    if (this.listen_double_press !== undefined) {
-      const dp_listen_double_press = new Datapoint({
-        ga: this.listen_double_press,
-        dpt: 'DPT1.001',
-        autoread: false,
-      }, platform.connection);
-
-      dp_listen_double_press.on('change', (oldValue: number, newValue: number) => {
-        platform.log.info(`Double Press: ${newValue}`);
-        this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
-          .updateValue(platform.Characteristic.ProgrammableSwitchEvent.DOUBLE_PRESS);
+    dp_listen_single_press.on('event', (event: string, value: number) => {
+      if (event === 'GroupValue_Write') {
+        platform.log.info(`Single Press: ${value}`);
         if (this.timer !== undefined) {
           this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
             .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
@@ -231,6 +206,33 @@ export class DoorbellAccessory implements AccessoryPlugin {
             this.timer = undefined;
           }, CONTACT_TIME_MS);
         }
+      }
+    });
+
+    if (this.listen_double_press !== undefined) {
+      const dp_listen_double_press = new Datapoint({
+        ga: this.listen_double_press,
+        dpt: 'DPT1.001',
+        autoread: false,
+      }, platform.connection);
+
+      dp_listen_double_press.on('event', (event: string, value: number) => {
+        platform.log.info(`Double Press: ${value}`);
+        if (event === 'GroupValue_Write') {
+          this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
+            .updateValue(platform.Characteristic.ProgrammableSwitchEvent.DOUBLE_PRESS);
+          if (this.timer !== undefined) {
+            this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
+              .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
+            this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: true });
+            this.timer = setTimeout(() => {
+              this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
+                .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
+              this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: false });
+              this.timer = undefined;
+            }, CONTACT_TIME_MS);
+          }
+        }
       });
     }
 
@@ -241,20 +243,22 @@ export class DoorbellAccessory implements AccessoryPlugin {
         autoread: false,
       }, platform.connection);
 
-      dp_listen_long_press.on('change', (oldValue: number, newValue: number) => {
-        platform.log.info(`Long Press: ${newValue}`);
-        this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
-          .updateValue(platform.Characteristic.ProgrammableSwitchEvent.LONG_PRESS);
-        if (this.timer !== undefined) {
-          this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-            .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
-          this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: true });
-          this.timer = setTimeout(() => {
+      dp_listen_long_press.on('event', (event: string, value: number) => {
+        platform.log.info(`Long Press: ${value}`);
+        if (event === 'GroupValue_Write') {
+          this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
+            .updateValue(platform.Characteristic.ProgrammableSwitchEvent.LONG_PRESS);
+          if (this.timer !== undefined) {
             this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-              .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
-            this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: false });
-            this.timer = undefined;
-          }, CONTACT_TIME_MS);
+              .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
+            this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: true });
+            this.timer = setTimeout(() => {
+              this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
+                .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
+              this.loggingService._addEntry({ time: Math.round(new Date().valueOf() / 1000), status: false });
+              this.timer = undefined;
+            }, CONTACT_TIME_MS);
+          }
         }
       });
     }
