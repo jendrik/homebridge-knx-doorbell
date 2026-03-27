@@ -1,7 +1,7 @@
-import { AccessoryConfig, AccessoryPlugin, Service } from 'homebridge';
+import type { AccessoryConfig, AccessoryPlugin, Service } from 'homebridge';
+import { Formats, Units, Perms } from 'homebridge';
 
 import { Datapoint } from 'knx';
-import fakegato from 'fakegato-history';
 
 import { PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_DISPLAY_NAME } from './settings.js';
 import { DoorbellPlatform } from './platform.js';
@@ -19,7 +19,8 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
   private readonly doorbellService: Service;
   private readonly contactSensorService: Service;
-  private readonly loggingService: fakegato;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private readonly loggingService: any;
   private readonly informationService: Service;
 
   constructor(
@@ -32,8 +33,8 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
       constructor() {
         super('Times Opened', EveContactSensorTimesOpened.UUID, {
-          format: platform.Characteristic.Formats.UINT32,
-          perms: [platform.Characteristic.Perms.READ, platform.Characteristic.Perms.NOTIFY],
+          format: Formats.UINT32,
+          perms: [Perms.READ, Perms.NOTIFY],
         });
         this.value = this.getDefaultValue();
       }
@@ -44,9 +45,9 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
       constructor() {
         super('Open Duration', EveContactSensorOpenDuration.UUID, {
-          format: platform.Characteristic.Formats.UINT32,
-          unit: platform.Characteristic.Units.SECONDS,
-          perms: [platform.Characteristic.Perms.READ, platform.Characteristic.Perms.NOTIFY, platform.Characteristic.Perms.WRITE],
+          format: Formats.UINT32,
+          unit: Units.SECONDS,
+          perms: [Perms.READ, Perms.NOTIFY, Perms.WRITE],
         });
         this.value = this.getDefaultValue();
       }
@@ -57,9 +58,9 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
       constructor() {
         super('Closed Duration', EveContactSensorClosedDuration.UUID, {
-          format: platform.Characteristic.Formats.UINT32,
-          unit: platform.Characteristic.Units.SECONDS,
-          perms: [platform.Characteristic.Perms.READ, platform.Characteristic.Perms.NOTIFY, platform.Characteristic.Perms.WRITE],
+          format: Formats.UINT32,
+          unit: Units.SECONDS,
+          perms: [Perms.READ, Perms.NOTIFY, Perms.WRITE],
         });
         this.value = this.getDefaultValue();
       }
@@ -70,9 +71,9 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
       constructor() {
         super('Last Activation', EveContactSensorLastActivation.UUID, {
-          format: platform.Characteristic.Formats.UINT32,
-          unit: platform.Characteristic.Units.SECONDS,
-          perms: [platform.Characteristic.Perms.READ, platform.Characteristic.Perms.NOTIFY],
+          format: Formats.UINT32,
+          unit: Units.SECONDS,
+          perms: [Perms.READ, Perms.NOTIFY],
         });
         this.value = this.getDefaultValue();
       }

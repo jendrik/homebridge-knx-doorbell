@@ -1,4 +1,4 @@
-import { API } from 'homebridge';
+import type { API } from 'homebridge';
 
 import { DoorbellPlatform } from './platform.js';
 import { PLATFORM_NAME } from './settings.js';

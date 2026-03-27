@@ -1,4 +1,4 @@
-import { API, StaticPlatformPlugin, Logger, PlatformConfig, AccessoryPlugin, Service, Characteristic, uuid } from 'homebridge';
+import type { AccessoryConfig, API, StaticPlatformPlugin, Logger, PlatformConfig, AccessoryPlugin, Service, Characteristic, uuid } from 'homebridge';
 
 import fakegato from 'fakegato-history';
 
@@ -44,9 +44,10 @@ export class DoorbellPlatform implements StaticPlatformPlugin {
     });
 
     // read devices
-    config.devices.forEach(element => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config.devices.forEach((element: any) => {
       if (element.name !== undefined && element.listen_single_press) {
-        this.devices.push(new DoorbellAccessory(this, element));
+        this.devices.push(new DoorbellAccessory(this, element as AccessoryConfig));
       }
     });
 
