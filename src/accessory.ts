@@ -9,6 +9,46 @@ import type { DoorbellDeviceConfig } from './config.js';
 
 export const CONTACT_TIME_MS = 1000;
 
+export type PressType = 'single' | 'double' | 'long';
+
+interface ProgrammableSwitchEventCharacteristic {
+  ProgrammableSwitchEvent: {
+    SINGLE_PRESS: number;
+    DOUBLE_PRESS: number;
+    LONG_PRESS: number;
+  };
+}
+
+interface ContactSensorStateCharacteristic {
+  ContactSensorState: {
+    CONTACT_DETECTED: number;
+    CONTACT_NOT_DETECTED: number;
+  };
+}
+
+export function programmableSwitchEventForPressType(
+  type: PressType,
+  characteristic: ProgrammableSwitchEventCharacteristic,
+): number {
+  switch (type) {
+  case 'single':
+    return characteristic.ProgrammableSwitchEvent.SINGLE_PRESS;
+  case 'double':
+    return characteristic.ProgrammableSwitchEvent.DOUBLE_PRESS;
+  case 'long':
+    return characteristic.ProgrammableSwitchEvent.LONG_PRESS;
+  }
+}
+
+export function contactStateForPressValue(
+  value: boolean,
+  characteristic: ContactSensorStateCharacteristic,
+): number {
+  return value
+    ? characteristic.ContactSensorState.CONTACT_DETECTED
+    : characteristic.ContactSensorState.CONTACT_NOT_DETECTED;
+}
+
 
 export class DoorbellAccessory implements AccessoryPlugin {
   private readonly uuid_base: string;
@@ -35,7 +75,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
       constructor() {
         super('Times Opened', EveContactSensorTimesOpened.UUID, {
           format: Formats.UINT32,
-          perms: [Perms.READ, Perms.NOTIFY],
+          perms: [Perms.PAIRED_READ, Perms.NOTIFY],
         });
         this.value = this.getDefaultValue();
       }
@@ -48,7 +88,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
         super('Open Duration', EveContactSensorOpenDuration.UUID, {
           format: Formats.UINT32,
           unit: Units.SECONDS,
-          perms: [Perms.READ, Perms.NOTIFY, Perms.WRITE],
+          perms: [Perms.PAIRED_READ, Perms.NOTIFY, Perms.PAIRED_WRITE],
         });
         this.value = this.getDefaultValue();
       }
@@ -61,7 +101,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
         super('Closed Duration', EveContactSensorClosedDuration.UUID, {
           format: Formats.UINT32,
           unit: Units.SECONDS,
-          perms: [Perms.READ, Perms.NOTIFY, Perms.WRITE],
+          perms: [Perms.PAIRED_READ, Perms.NOTIFY, Perms.PAIRED_WRITE],
         });
         this.value = this.getDefaultValue();
       }
@@ -74,7 +114,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
         super('Last Activation', EveContactSensorLastActivation.UUID, {
           format: Formats.UINT32,
           unit: Units.SECONDS,
-          perms: [Perms.READ, Perms.NOTIFY],
+          perms: [Perms.PAIRED_READ, Perms.NOTIFY],
         });
         this.value = this.getDefaultValue();
       }
@@ -99,6 +139,8 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
     this.contactSensorService = new platform.Service.ContactSensor(this.name);
     this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
+      .updateValue(true);
+    this.contactSensorService.getCharacteristic(platform.Characteristic.ContactSensorState)
       .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
 
     // times opened
@@ -168,7 +210,10 @@ export class DoorbellAccessory implements AccessoryPlugin {
     this.doorbellService.getCharacteristic(EveContactSensorLastActivation).onGet(async () => {
       if (this.loggingService.getInitialTime() === undefined) {
         return 0;
-      } else if (this.doorbellService.getCharacteristic(platform.Characteristic.ContactSensorState).value) {
+      } else if (
+        this.contactSensorService.getCharacteristic(platform.Characteristic.ContactSensorState).value
+          === platform.Characteristic.ContactSensorState.CONTACT_DETECTED
+      ) {
         return Math.round(new Date().valueOf() / 1000) - this.loggingService.getInitialTime();
       } else {
         let lastActivation = this.loggingService.history[this.loggingService.history.length - 1].time;
@@ -192,16 +237,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
     }, platform.connection);
 
     dp_listen_single_press.on('change', (oldValue: boolean, newValue: boolean) => {
-      platform.log.info(`Single Press: ${newValue}`);
-      if (newValue === true) {
-        this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
-          .updateValue(platform.Characteristic.ProgrammableSwitchEvent.SINGLE_PRESS);
-        this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-          .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
-      } else {
-        this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-          .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
-      }
+      this.handlePress('single', newValue);
     });
 
     if (this.listen_double_press !== undefined) {
@@ -212,16 +248,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
       }, platform.connection);
 
       dp_listen_double_press.on('change', (oldValue: boolean, newValue: boolean) => {
-        platform.log.info(`Double Press: ${newValue}`);
-        if (newValue === true) {
-          this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
-            .updateValue(platform.Characteristic.ProgrammableSwitchEvent.DOUBLE_PRESS);
-          this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-            .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
-        } else {
-          this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-            .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
-        }
+        this.handlePress('double', newValue);
       });
     }
 
@@ -233,18 +260,22 @@ export class DoorbellAccessory implements AccessoryPlugin {
       }, platform.connection);
 
       dp_listen_long_press.on('change', (oldValue: boolean, newValue: boolean) => {
-        platform.log.info(`Long Press: ${newValue}`);
-        if (newValue === true) {
-          this.doorbellService.getCharacteristic(platform.Characteristic.ProgrammableSwitchEvent)
-            .updateValue(platform.Characteristic.ProgrammableSwitchEvent.LONG_PRESS);
-          this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-            .updateValue(platform.Characteristic.ContactSensorState.CONTACT_DETECTED);
-        } else {
-          this.contactSensorService.getCharacteristic(platform.Characteristic.StatusActive)
-            .updateValue(platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED);
-        }
+        this.handlePress('long', newValue);
       });
     }
+  }
+
+  private handlePress(type: PressType, value: boolean): void {
+    const label = type[0].toUpperCase() + type.slice(1);
+    this.platform.log.info(`${label} Press: ${value}`);
+
+    if (value === true) {
+      this.doorbellService.getCharacteristic(this.platform.Characteristic.ProgrammableSwitchEvent)
+        .updateValue(programmableSwitchEventForPressType(type, this.platform.Characteristic));
+    }
+
+    this.contactSensorService.getCharacteristic(this.platform.Characteristic.ContactSensorState)
+      .updateValue(contactStateForPressValue(value, this.platform.Characteristic));
   }
 
   getServices(): Service[] {
