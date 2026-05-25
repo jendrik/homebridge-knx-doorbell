@@ -1,10 +1,11 @@
-import type { AccessoryConfig, AccessoryPlugin, Service } from 'homebridge';
+import type { AccessoryPlugin, Service } from 'homebridge';
 import { Formats, Units, Perms } from 'homebridge';
 
 import { Datapoint } from 'knx';
 
 import { PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_DISPLAY_NAME } from './settings.js';
 import { DoorbellPlatform } from './platform.js';
+import type { DoorbellDeviceConfig } from './config.js';
 
 export const CONTACT_TIME_MS = 1000;
 
@@ -14,8 +15,8 @@ export class DoorbellAccessory implements AccessoryPlugin {
   private readonly name: string;
   private readonly displayName: string;
   private readonly listen_single_press: string;
-  private readonly listen_double_press: string;
-  private readonly listen_long_press: string;
+  private readonly listen_double_press?: string;
+  private readonly listen_long_press?: string;
 
   private readonly doorbellService: Service;
   private readonly contactSensorService: Service;
@@ -25,7 +26,7 @@ export class DoorbellAccessory implements AccessoryPlugin {
 
   constructor(
     private readonly platform: DoorbellPlatform,
-    private readonly config: AccessoryConfig,
+    private readonly config: DoorbellDeviceConfig,
   ) {
 
     class EveContactSensorTimesOpened extends platform.Characteristic {

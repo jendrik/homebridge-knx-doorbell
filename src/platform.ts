@@ -1,10 +1,11 @@
-import type { AccessoryConfig, API, StaticPlatformPlugin, Logger, PlatformConfig, AccessoryPlugin, Service, Characteristic, uuid } from 'homebridge';
+import type { API, StaticPlatformPlugin, Logger, PlatformConfig, AccessoryPlugin, Service, Characteristic, uuid } from 'homebridge';
 
 import fakegato from 'fakegato-history';
 
 import { Connection } from 'knx';
 
 import { DoorbellAccessory } from './accessory.js';
+import { parseDoorbellPlatformConfig } from './config.js';
 
 
 export class DoorbellPlatform implements StaticPlatformPlugin {
@@ -29,29 +30,44 @@ export class DoorbellPlatform implements StaticPlatformPlugin {
 
     this.fakeGatoHistoryService = fakegato(this.api);
 
-    // connect
+    const parsedConfig = parseDoorbellPlatformConfig(config);
+
+    for (const warning of parsedConfig.warnings) {
+      this.log.warn(warning);
+    }
+
     this.connection = new Connection({
-      ipAddr: config.ip ?? '224.0.23.12',
-      ipPort: config.port ?? 3671,
+      ipAddr: parsedConfig.config.ip,
+      ipPort: parsedConfig.config.port,
       handlers: {
-        connected: function () {
-          log.info('KNX connected');
+        connected: () => {
+          this.log.info('KNX connected');
         },
-        error: function (connstatus: unknown) {
-          log.error(`KNX status: ${connstatus}`);
+        error: (connstatus: unknown) => {
+          this.log.error(`KNX status: ${String(connstatus)}`);
         },
       },
     });
 
-    // read devices
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    config.devices.forEach((element: any) => {
-      if (element.name !== undefined && element.listen_single_press) {
-        this.devices.push(new DoorbellAccessory(this, element as AccessoryConfig));
-      }
+    for (const deviceConfig of parsedConfig.config.devices) {
+      this.devices.push(new DoorbellAccessory(this, deviceConfig));
+    }
+
+    this.api.on('shutdown', () => {
+      this.shutdownKnxConnection();
     });
 
     log.info('finished initializing!');
+  }
+
+  private shutdownKnxConnection(): void {
+    try {
+      this.connection.Disconnect(() => {
+        this.log.info('KNX disconnected');
+      });
+    } catch (error) {
+      this.log.warn(`KNX disconnect failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
