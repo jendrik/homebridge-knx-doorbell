@@ -15,33 +15,34 @@
     "url": "https://github.com/jendrik/homebridge-knx-doorbell/issues"
   },
   "engines": {
-    "node": "^20.18.0 || ^22.10.0 || ^24.0.0",
-    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
+    "node": "^22.12.0 || ^24.0.0",
+    "homebridge": "^2.0.0"
   },
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint . --max-warnings=0",
     "watch": "npm run build && npm link && nodemon",
     "build": "rimraf ./dist && tsc",
-    "prepublishOnly": "npm run lint && npm run build"
+    "test": "node -e \"const fs = require('node:fs'); const dir = 'test'; if (!fs.existsSync(dir) || !fs.readdirSync(dir).some((file) => file.endsWith('.test.ts'))) { console.error('No test files found: expected test/*.test.ts'); process.exit(1); }\" && node --import tsx --test test/*.test.ts",
+    "prepublishOnly": "npm run test && npm run lint && npm run build"
   },
   "keywords": [
     "homebridge-plugin",
     "knx"
   ],
   "devDependencies": {
-    "@eslint/js": "^9.13.0",
-    "@types/node": "^22.7.9",
-    "eslint": "^9.13.0",
-    "homebridge": "^1.8.0",
-    "nodemon": "^3.1.7",
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.4",
+    "homebridge": "^2.0.2",
+    "nodemon": "^3.1.11",
     "rimraf": "^6.0.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "^8.11.0"
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.4"
   },
   "dependencies": {
-    "fakegato-history": "^0.6.4",
-    "knx": "^2.5.2"
+    "fakegato-history": "^0.6.7",
+    "knx": "^2.5.4"
   }
 }
