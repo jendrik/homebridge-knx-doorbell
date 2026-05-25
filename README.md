@@ -13,8 +13,8 @@ A [Homebridge](https://homebridge.io) plugin that exposes KNX doorbell buttons t
 
 ## Requirements
 
-- [Homebridge](https://homebridge.io) v1.8.0 or later (including v2.0)
-- Node.js v20, v22, or v24
+- [Homebridge](https://homebridge.io) v2.0.0 or later
+- Node.js v22.12.0 or v24.0.0 or later within those release lines
 - A KNX IP router or interface reachable on the network
 
 ## Installation
@@ -84,6 +84,9 @@ npm run build
 
 # Lint
 npm run lint
+
+# Test
+npm run test
 
 # Watch mode (builds, links, and starts Homebridge with live reload)
 npm run watch
